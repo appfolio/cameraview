@@ -59,6 +59,8 @@ class Camera1 extends CameraViewImpl {
 
     private final SizeMap mPictureSizes = new SizeMap();
 
+    private Size mSize;
+
     private AspectRatio mAspectRatio;
 
     private boolean mShowingPreview;
@@ -181,6 +183,30 @@ class Camera1 extends CameraViewImpl {
     @Override
     AspectRatio getAspectRatio() {
         return mAspectRatio;
+    }
+
+    @Override
+    SortedSet<Size> getSupportedPictureSizes() {
+        return mPictureSizes.sizes(mAspectRatio);
+    }
+
+    @Override
+    boolean setPictureSize(Size size) {
+        if (mSize == null || !isCameraOpened()) {
+            // Handle this later when camera is opened
+            mSize = size;
+            return true;
+        } else if (!mSize.equals(size)) {
+            final SortedSet<Size> sizes = mPictureSizes.sizes(mAspectRatio);
+            if (sizes == null || !sizes.contains(size)) {
+                throw new UnsupportedOperationException(size + " is not supported");
+            } else {
+                mSize = size;
+                adjustCameraParameters();
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
@@ -331,12 +357,15 @@ class Camera1 extends CameraViewImpl {
         final Camera.Size currentSize = mCameraParameters.getPictureSize();
         if (currentSize.width != size.getWidth() || currentSize.height != size.getHeight()) {
             // Largest picture size in this ratio
-            final Size pictureSize = mPictureSizes.sizes(mAspectRatio).last();
+            final Size largestSize = mPictureSizes.sizes(mAspectRatio).last();
+            if ((mSize != null && !mPictureSizes.sizes(mAspectRatio).contains(mSize)) || mSize == null) {
+                mSize = largestSize;
+            }
             if (mShowingPreview) {
                 mCamera.stopPreview();
             }
             mCameraParameters.setPreviewSize(size.getWidth(), size.getHeight());
-            mCameraParameters.setPictureSize(pictureSize.getWidth(), pictureSize.getHeight());
+            mCameraParameters.setPictureSize(mSize.getWidth(), mSize.getHeight());
             mCameraParameters.setRotation(calcCameraRotation(mDisplayOrientation));
             setAutoFocusInternal(mAutoFocus);
             setFlashInternal(mFlash);
