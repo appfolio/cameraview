@@ -35,6 +35,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.Set;
+import java.util.SortedSet;
 
 public class CameraView extends FrameLayout {
 
@@ -356,6 +357,15 @@ public class CameraView extends FrameLayout {
     @Nullable
     public AspectRatio getAspectRatio() {
         return mImpl.getAspectRatio();
+    }
+
+    @Nullable
+    public SortedSet<Size> getSupportedPictureSizes() {
+        return mImpl.getSupportedPictureSizes();
+    }
+
+    public boolean setPictureSize(Size size) {
+        return mImpl.setPictureSize(size);
     }
 
     /**

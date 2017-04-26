@@ -19,6 +19,7 @@ package com.google.android.cameraview;
 import android.view.View;
 
 import java.util.Set;
+import java.util.SortedSet;
 
 abstract class CameraViewImpl {
 
@@ -56,6 +57,10 @@ abstract class CameraViewImpl {
     abstract boolean setAspectRatio(AspectRatio ratio);
 
     abstract AspectRatio getAspectRatio();
+
+    abstract SortedSet<Size> getSupportedPictureSizes();
+
+    abstract boolean setPictureSize(Size size);
 
     abstract void setAutoFocus(boolean autoFocus);
 
