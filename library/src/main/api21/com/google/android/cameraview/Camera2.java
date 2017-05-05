@@ -465,16 +465,15 @@ class Camera2 extends CameraViewImpl {
         for (android.util.Size size : map.getOutputSizes(ImageFormat.JPEG)) {
             mPictureSizes.add(new Size(size.getWidth(), size.getHeight()));
         }
-
-        Size largest = mPictureSizes.sizes(mAspectRatio).last();
-        if ((mSize != null && !mPictureSizes.sizes(mAspectRatio).contains(mSize)) || mSize == null) {
-            mSize = largest;
-        }
     }
 
     private void prepareImageReader() {
         if (mImageReader != null) {
             mImageReader.close();
+        }
+        final Size largestSize = mPictureSizes.sizes(mAspectRatio).last();
+        if ((mSize != null && !mPictureSizes.sizes(mAspectRatio).contains(mSize)) || mSize == null) {
+            mSize = largestSize;
         }
         mImageReader = ImageReader.newInstance(mSize.getWidth(), mSize.getHeight(),
                 ImageFormat.JPEG, /* maxImages */ 2);
