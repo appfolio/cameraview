@@ -186,6 +186,8 @@ class Camera2 extends CameraViewImpl {
 
     private final SizeMap mPictureSizes = new SizeMap();
 
+    private Size mSize;
+
     private int mFacing;
 
     private AspectRatio mAspectRatio = Constants.DEFAULT_ASPECT_RATIO;
@@ -281,6 +283,28 @@ class Camera2 extends CameraViewImpl {
     @Override
     AspectRatio getAspectRatio() {
         return mAspectRatio;
+    }
+
+    @Override
+    SortedSet<Size> getSupportedPictureSizes() {
+        return mPictureSizes.sizes(mAspectRatio);
+    }
+
+    @Override
+    boolean setPictureSize(Size size) {
+        if (size == null || size.equals(mSize) ||
+                !mPictureSizes.sizes(mAspectRatio).contains(size)) {
+            // TODO: Better error handling
+            return false;
+        }
+        mSize = size;
+        prepareImageReader();
+        if (mCaptureSession != null) {
+            mCaptureSession.close();
+            mCaptureSession = null;
+            startCaptureSession();
+        }
+        return true;
     }
 
     @Override
@@ -447,8 +471,11 @@ class Camera2 extends CameraViewImpl {
         if (mImageReader != null) {
             mImageReader.close();
         }
-        Size largest = mPictureSizes.sizes(mAspectRatio).last();
-        mImageReader = ImageReader.newInstance(largest.getWidth(), largest.getHeight(),
+        final Size largestSize = mPictureSizes.sizes(mAspectRatio).last();
+        if ((mSize != null && !mPictureSizes.sizes(mAspectRatio).contains(mSize)) || mSize == null) {
+            mSize = largestSize;
+        }
+        mImageReader = ImageReader.newInstance(mSize.getWidth(), mSize.getHeight(),
                 ImageFormat.JPEG, /* maxImages */ 2);
         mImageReader.setOnImageAvailableListener(mOnImageAvailableListener, null);
     }
